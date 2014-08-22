@@ -199,6 +199,35 @@ helpers.findNearestHealthWell = function(gameData) {
   return pathInfoObject.direction;
 };
 
+// Returns the direction of the enemy with lowest health, below a threshold
+// (or returns false if there are no enemies that fit this description)
+helpers.findWeakestEnemy = function(gameData) {
+  var hero = gameData.activeHero;
+  var board = gameData.board;
+
+  // Find all enemy tiles
+  var enemies = [];
+  for (var i=0; i<board.lengthOfSide; i++) {
+    for (var j=0; j<board.lengthOfSide; j++) {
+      var tile = board.tiles[i][j];
+      if (tile.type === 'Hero' && tile.team !== hero.team)
+        enemies.push(tile);
+    }
+  }
+  var weakest = enemies.reduce(function (obj1, obj2) { 
+    return obj1.health < obj2.health ? obj1 : obj2;
+  });
+
+  // Returns the direction of the enemy with lowest health, and lower health than the hero
+  // (or returns false if there are no accessible enemies that fits this description
+  var pathInfoObject = helpers.findNearestObjectDirectionAndDistance(board, hero, function(enemyTile) {
+    return enemyTile.type === 'Hero' && enemyTile.team !== hero.team && enemyTile.health === weakest.health;
+
+  });
+  
+  return pathInfoObject.direction;
+}
+
 // Returns the direction of the nearest enemy with lower health
 // (or returns false if there are no accessible enemies that fit this description)
 helpers.findNearestWeakerEnemy = function(gameData) {
